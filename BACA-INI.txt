@@ -1,0 +1,41 @@
+CARA AKSES APLIKASI UKK_2026
+=============================
+
+Setelah Laragon berjalan (Start All), akses dengan URL berikut:
+
+PILIHAN 1 (PALING MUDAH):
+http://localhost/ukk_2026/public
+
+PILIHAN 2 (Jika .htaccess berfungsi):
+http://localhost/ukk_2026
+
+PILIHAN 3 (Virtual Host - setup dulu):
+http://ukk_2026.test
+
+
+JIKA MUNCUL ERROR "NOT FOUND":
+1. Restart Apache di Laragon:
+   - Klik kanan icon Laragon
+   - Stop
+   - Start All
+
+2. Gunakan URL dengan /public:
+   http://localhost/ukk_2026/public
+
+
+LOGIN CREDENTIALS:
+==================
+Admin:
+Email: admin@app.com
+Password: admin123
+
+User Biasa:
+Email: user@app.com
+Password: user123
+
+
+TROUBLESHOOTING:
+================
+- Pastikan Laragon sudah Start All (Apache + MySQL hijau)
+- Pastikan sudah restart Apache setelah perubahan .htaccess
+- Jika tetap error, gunakan: http://localhost/ukk_2026/public
