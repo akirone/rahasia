@@ -47,11 +47,25 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:45',
-            'email' => 'required|email|max:45|unique:users',
-            'nis' => 'required|string|max:45|unique:users',
-            'kelas' => 'required|string|max:45',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users',
+            'nis' => 'required|string|max:20|unique:users',
+            'kelas' => 'required|string|max:50',
             'password' => 'required|string|min:4|confirmed',
+        ], [
+            'name.required' => 'Nama wajib diisi',
+            'name.max' => 'Nama maksimal 255 karakter',
+            'email.required' => 'Email wajib diisi',
+            'email.email' => 'Format email tidak valid',
+            'email.unique' => 'Email sudah terdaftar',
+            'nis.required' => 'NIS wajib diisi',
+            'nis.max' => 'NIS maksimal 20 karakter',
+            'nis.unique' => 'NIS sudah terdaftar',
+            'kelas.required' => 'Kelas wajib diisi',
+            'kelas.max' => 'Kelas maksimal 50 karakter',
+            'password.required' => 'Password wajib diisi',
+            'password.min' => 'Password minimal 4 karakter',
+            'password.confirmed' => 'Konfirmasi password tidak cocok',
         ]);
 
         $user = User::create([

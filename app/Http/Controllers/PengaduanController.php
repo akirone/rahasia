@@ -107,13 +107,14 @@ class PengaduanController extends Controller
 
         $validated = $request->validate([
             'kategori_id' => 'required|exists:kategoris,id',
-            'lokasi' => 'required|string|max:255',
+            'lokasi' => 'required|string|max:45',
             'keterangan' => 'required|string',
             'foto' => 'nullable|image|mimes:jpeg,jpg,png|max:2048'
         ], [
             'kategori_id.required' => 'Kategori wajib dipilih',
             'kategori_id.exists' => 'Kategori tidak valid',
             'lokasi.required' => 'Lokasi wajib diisi',
+            'lokasi.max' => 'Lokasi maksimal 45 karakter',
             'keterangan.required' => 'Keterangan wajib diisi',
             'foto.image' => 'File harus berupa gambar',
             'foto.mimes' => 'Format gambar harus JPG, JPEG, atau PNG',
@@ -193,14 +194,14 @@ class PengaduanController extends Controller
 
         $validated = $request->validate([
             'kategori_id' => 'required|exists:kategoris,id',
-            'lokasi' => 'required|string|max:255',
+            'lokasi' => 'required|string|max:45',
             'keterangan' => 'required|string',
             'foto' => 'nullable|image|mimes:jpeg,jpg,png|max:4096'
         ], [
             'kategori_id.required' => 'Kategori wajib dipilih',
             'kategori_id.exists' => 'Kategori tidak valid',
             'lokasi.required' => 'Lokasi wajib diisi',
-            'lokasi.max' => 'Lokasi maksimal 255 karakter',
+            'lokasi.max' => 'Lokasi maksimal 45 karakter',
             'keterangan.required' => 'Keterangan wajib diisi',
             'foto.image' => 'File harus berupa gambar',
             'foto.mimes' => 'Format gambar harus JPG, JPEG, atau PNG',
@@ -228,7 +229,6 @@ class PengaduanController extends Controller
 
     public function destroy(Pengaduan $pengaduan)
     {
-        // Check authorization - only owner can delete (and only if status is Menunggu)
         /** @var \App\Models\User $user */
         $user = Auth::user();
 

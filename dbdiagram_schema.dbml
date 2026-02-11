@@ -1,0 +1,78 @@
+// Database Schema for dbdiagram.io
+// Paste this code to: https://dbdiagram.io/d
+// Created: February 11, 2026
+
+Table users {
+  id bigint [pk, increment]
+  name varchar(255) [not null]
+  email varchar(255) [unique, not null]
+  email_verified_at timestamp [null]
+  password varchar(255) [not null]
+  nis varchar(20) [null, note: 'Nomor Induk Siswa']
+  kelas varchar(50) [null, note: 'Kelas siswa']
+  is_admin boolean [default: false, note: 'Status admin']
+  remember_token varchar(100) [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+  
+  Note: 'Tabel pengguna - Admin dan Siswa'
+}
+
+Table kategoris {
+  id bigint [pk, increment]
+  nama varchar(45) [unique, not null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+  
+  Note: 'Tabel kategori pengaduan'
+}
+
+Table pengaduans {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users.id]
+  kategori_id bigint [not null, ref: > kategoris.id]
+  tanggal datetime [not null]
+  lokasi varchar(45) [not null]
+  keterangan text [not null]
+  foto varchar(255) [null]
+  status status_enum [default: 'Menunggu', note: 'Status: Menunggu, Proses, Selesai']
+  created_at timestamp [null]
+  updated_at timestamp [null]
+  
+  indexes {
+    user_id
+    kategori_id
+    status
+  }
+  
+  Note: 'Tabel pengaduan siswa'
+}
+
+Table feedback {
+  id bigint [pk, increment]
+  pengaduan_id bigint [not null, ref: > pengaduans.id]
+  user_id bigint [not null, ref: > users.id]
+  tanggal datetime [not null]
+  isi text [not null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+  
+  indexes {
+    pengaduan_id
+    user_id
+  }
+  
+  Note: 'Tabel feedback dari admin ke pengaduan'
+}
+
+Enum status_enum {
+  Menunggu
+  Proses
+  Selesai
+}
+
+// Relationships
+// users 1--* pengaduans (One user can create many pengaduans)
+// users 1--* feedback (One user/admin can give many feedbacks)
+// kategoris 1--* pengaduans (One category can have many pengaduans)
+// pengaduans 1--* feedback (One pengaduan can have many feedbacks)
