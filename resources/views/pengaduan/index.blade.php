@@ -300,7 +300,7 @@
             <div class="sidebar-header">
                 <a href="{{ route('dashboard') }}" class="sidebar-brand">
                     <i class="bi bi-grid-3x3-gap-fill"></i>
-                    <span>Dashboard Admin</span>
+                    <span>Dashboard {{ Auth::user()->isAdmin() ? 'Admin' : 'User' }}</span>
                 </a>
             </div>
             <nav class="sidebar-menu">
@@ -311,13 +311,15 @@
 
                 <a href="{{ route('pengaduan.index') }}" class="menu-item active">
                     <i class="bi bi-briefcase"></i>
-                    <span>Semua Pengaduan</span>
+                    <span>{{ Auth::user()->isAdmin() ? 'Semua Pengaduan' : 'Pengaduan Saya' }}</span>
                 </a>
 
-                <a href="{{ route('kategori.index') }}" class="menu-item">
-                    <i class="bi bi-folder"></i>
-                    <span>Kelola Kategori</span>
-                </a>
+                @if (Auth::user()->isAdmin())
+                    <a href="{{ route('kategori.index') }}" class="menu-item">
+                        <i class="bi bi-folder"></i>
+                        <span>Kelola Kategori</span>
+                    </a>
+                @endif
             </nav>
         </aside>
 
@@ -466,25 +468,31 @@
 
                 <!-- Pengaduan Table -->
                 <div class="table-card">
-                    <div class="table-card-header">
+                    <div class="table-card-header d-flex justify-content-between align-items-center">
                         <h2 class="table-card-title">
                             <i class="bi bi-list-ul"></i> Daftar Pengaduan
                         </h2>
+                        @if (!auth()->user()->isAdmin())
+                            <a href="{{ route('pengaduan.create') }}" class="btn btn-success"
+                                style="border-radius: 8px; padding: 0.625rem 1.25rem; font-weight: 600;">
+                                <i class="bi bi-plus-circle me-1"></i>Buat Pengaduan
+                            </a>
+                        @endif
                     </div>
                     <div class="table-card-body">
                         @if ($pengaduans->count() > 0)
                             <table class="custom-table">
                                 <thead>
                                     <tr>
-                                        <th>Tanggal</th>
+                                        <th style="width: 90px;">Tanggal</th>
                                         @if (auth()->user()->isAdmin())
-                                            <th>Siswa</th>
+                                            <th style="width: 160px;">Siswa</th>
+                                            <th style="width: 100px;">NISN</th>
                                         @endif
-                                        <th>Kategori</th>
+                                        <th style="width: 130px;">Kategori</th>
                                         <th>Lokasi</th>
-                                        <th>Status</th>
-                                        <th>Foto</th>
-                                        <th>Aksi</th>
+                                        <th style="width: 120px;">Status</th>
+                                        <th style="width: 110px;">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -501,10 +509,15 @@
                                                 <td>
                                                     <div>
                                                         <strong
-                                                            style="color: #2d3748;">{{ $pengaduan->user->name }}</strong><br>
+                                                            style="color: #2d3748; font-size: 0.875rem;">{{ $pengaduan->user->name }}</strong><br>
                                                         <small
-                                                            style="color: #718096;">{{ $pengaduan->user->kelas }}</small>
+                                                            style="color: #718096; font-size: 0.75rem;">{{ $pengaduan->user->kelas }}</small>
                                                     </div>
+                                                </td>
+                                                <td>
+                                                    <span style="color: #4a5568; font-weight: 500; font-size: 0.875rem;">
+                                                        {{ $pengaduan->user->nis ?? '-' }}
+                                                    </span>
                                                 </td>
                                             @endif
                                             <td>
@@ -513,7 +526,7 @@
                                                 </span>
                                             </td>
                                             <td style="color: #4a5568; font-weight: 500;">
-                                                {{ Str::limit($pengaduan->lokasi, 30) }}
+                                                {{ Str::limit($pengaduan->lokasi, 25) }}
                                             </td>
                                             <td>
                                                 @php
@@ -533,15 +546,6 @@
                                                 <span class="badge-priority {{ $config['class'] }}">
                                                     <i class="bi bi-{{ $config['icon'] }}"></i> {{ $pengaduan->status }}
                                                 </span>
-                                            </td>
-                                            <td class="text-center">
-                                                @if ($pengaduan->foto)
-                                                    <i class="bi bi-image-fill"
-                                                        style="color: #48bb78; font-size: 18px;"></i>
-                                                @else
-                                                    <i class="bi bi-dash-circle"
-                                                        style="color: #cbd5e0; font-size: 18px;"></i>
-                                                @endif
                                             </td>
                                             <td>
                                                 <a href="{{ route('pengaduan.show', $pengaduan) }}"
@@ -581,10 +585,10 @@
                                     @endif
                                 </p>
                                 @if (!auth()->user()->isAdmin())
-                                    <button type="button" class="btn-create" style="margin-top: 15px;"
-                                        data-bs-toggle="modal" data-bs-target="#createPengaduanModal">
+                                    <a href="{{ route('pengaduan.create') }}" class="btn-create"
+                                        style="margin-top: 15px; display: inline-block; text-decoration: none;">
                                         <i class="bi bi-plus-lg"></i> Buat Pengaduan Pertama
-                                    </button>
+                                    </a>
                                 @endif
                             </div>
                         @endif
@@ -593,89 +597,4 @@
             </div>
         </main>
     </div>
-
-    <!-- Create Pengaduan Modal (User Only) -->
-    @if (!auth()->user()->isAdmin())
-        <div class="modal fade" id="createPengaduanModal" tabindex="-1" aria-labelledby="createPengaduanModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content" style="border-radius: 16px; border: none;">
-                    <div class="modal-header"
-                        style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); border-radius: 16px 16px 0 0;">
-                        <h5 class="modal-title text-white" id="createPengaduanModalLabel">
-                            <i class="bi bi-file-earmark-plus-fill"></i> Buat Pengaduan Baru
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                            aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body" style="padding: 30px;">
-                        <form action="{{ route('pengaduan.store') }}" method="POST" enctype="multipart/form-data"
-                            id="formPengaduan">
-                            @csrf
-
-                            <div class="mb-4">
-                                <label for="kategori_id" class="form-label" style="color: #4a5568; font-weight: 500;">
-                                    Kategori Pengaduan <span class="text-danger">*</span>
-                                </label>
-                                <select class="form-select" id="kategori_id" name="kategori_id" required
-                                    style="border-radius: 8px; border: 1px solid #e2e8f0; padding: 10px 15px;">
-                                    <option value="">Pilih Kategori</option>
-                                    @foreach ($kategoris as $kategori)
-                                        <option value="{{ $kategori->id }}">{{ $kategori->nama }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div class="mb-4">
-                                <label for="lokasi" class="form-label" style="color: #4a5568; font-weight: 500;">
-                                    Lokasi Kejadian <span class="text-danger">*</span>
-                                </label>
-                                <input type="text" class="form-control" id="lokasi" name="lokasi"
-                                    placeholder="Contoh: Ruang Kelas XII RPL" required
-                                    style="border-radius: 8px; border: 1px solid #e2e8f0; padding: 10px 15px;">
-                                <small style="color: #718096;">Sebutkan lokasi spesifik kejadian</small>
-                            </div>
-
-                            <div class="mb-4">
-                                <label for="keterangan" class="form-label" style="color: #4a5568; font-weight: 500;">
-                                    Keterangan Lengkap <span class="text-danger">*</span>
-                                </label>
-                                <textarea class="form-control" id="keterangan" name="keterangan" rows="5"
-                                    placeholder="Jelaskan detail pengaduan Anda..." required
-                                    style="border-radius: 8px; border: 1px solid #e2e8f0; padding: 10px 15px;"></textarea>
-                                <small style="color: #718096;">Berikan penjelasan sedetail mungkin</small>
-                            </div>
-
-                            <div class="mb-4">
-                                <label for="foto" class="form-label" style="color: #4a5568; font-weight: 500;">
-                                    Foto Pendukung (Opsional)
-                                </label>
-                                <input type="file" class="form-control" id="foto" name="foto"
-                                    accept="image/*"
-                                    style="border-radius: 8px; border: 1px solid #e2e8f0; padding: 10px 15px;">
-                                <small style="color: #718096;">Format: JPG, JPEG, PNG. Maksimal 2MB</small>
-                            </div>
-
-                            <div class="alert alert-info"
-                                style="background: #e6fffa; border-left: 4px solid #11998e; border-radius: 8px;">
-                                <i class="bi bi-info-circle-fill me-2" style="color: #11998e;"></i>
-                                <strong>Catatan:</strong> Pengaduan Anda akan direview oleh admin. Status awal adalah
-                                "Menunggu".
-                            </div>
-
-                            <div class="d-flex gap-2 justify-content-end">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                                    style="border-radius: 8px; padding: 10px 20px;">
-                                    <i class="bi bi-x-circle"></i> Batal
-                                </button>
-                                <button type="submit" class="btn-create" style="padding: 10px 20px;">
-                                    <i class="bi bi-send-fill"></i> Kirim Pengaduan
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    @endif
 @endsection

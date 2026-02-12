@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use App\Models\Pengaduan;
 use App\Models\Kategori;
 use Illuminate\Http\Request;
@@ -136,9 +137,9 @@ class PengaduanController extends Controller
 
         Pengaduan::create($validated);
 
-        // Redirect based on role - user to dashboard, admin to pengaduan.index (though admin shouldn't reach here)
-        return redirect()->route($user->isAdmin() ? 'pengaduan.index' : 'dashboard')
-            ->with('success', 'Pengaduan berhasil dikirim dan akan segera ditindaklanjuti');
+        // Redirect to dashboard with success message
+        return redirect()->route('dashboard')
+            ->with('success', '🎉 Pengaduan berhasil dikirim! Admin akan segera meninjau dan menindaklanjuti pengaduan Anda.');
     }
 
     public function show(Pengaduan $pengaduan)
@@ -223,8 +224,8 @@ class PengaduanController extends Controller
 
         $pengaduan->update($validated);
 
-        return redirect()->route($user->isAdmin() ? 'pengaduan.index' : 'dashboard')
-            ->with('success', 'Pengaduan berhasil diperbarui');
+        return redirect()->route('dashboard')
+            ->with('success', '✅ Pengaduan berhasil diperbarui! Perubahan Anda telah disimpan.');
     }
 
     public function destroy(Pengaduan $pengaduan)
@@ -248,18 +249,32 @@ class PengaduanController extends Controller
 
         $pengaduan->delete();
 
-        return redirect()->route($user->isAdmin() ? 'pengaduan.index' : 'dashboard')
-            ->with('success', 'Pengaduan berhasil dihapus');
+        return redirect()->route('dashboard')
+            ->with('success', '🗑️ Pengaduan berhasil dihapus dari sistem.');
     }
 
     public function updateStatus(Request $request, Pengaduan $pengaduan)
     {
         $validated = $request->validate([
-            'status' => 'required|in:Menunggu,Proses,Selesai'
+            'status' => 'required|in:Menunggu,Proses,Selesai',
+            'foto_dokumentasi' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:4096'
         ], [
             'status.required' => 'Status wajib dipilih',
             'status.in' => 'Status tidak valid. Pilih: Menunggu, Proses, atau Selesai',
+            'foto_dokumentasi.image' => 'File harus berupa gambar',
+            'foto_dokumentasi.mimes' => 'Format gambar harus: jpeg, png, jpg, atau gif',
+            'foto_dokumentasi.max' => 'Ukuran gambar maksimal 4MB',
         ]);
+
+        // Handle foto dokumentasi upload
+        if ($request->hasFile('foto_dokumentasi')) {
+            // Delete old foto dokumentasi if exists
+            if ($pengaduan->foto_dokumentasi) {
+                Storage::delete($pengaduan->foto_dokumentasi);
+            }
+
+            $validated['foto_dokumentasi'] = $request->file('foto_dokumentasi')->store('dokumentasi', 'public');
+        }
 
         $pengaduan->update($validated);
 

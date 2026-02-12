@@ -28,7 +28,7 @@ class DashboardController extends Controller
                     ->latest()
                     ->take(10)
                     ->get(),
-                'users' => User::withCount('pengaduans')->latest()->get(),
+                'users' => User::withCount('pengaduans')->latest()->paginate(5),
             ];
 
             return view('dashboard.admin', $data);

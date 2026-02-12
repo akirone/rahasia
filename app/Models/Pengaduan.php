@@ -21,6 +21,7 @@ class Pengaduan extends Model
         'keterangan',
         'foto',
         'status',
+        'foto_dokumentasi',
     ];
 
     protected $casts = [

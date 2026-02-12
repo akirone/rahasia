@@ -6,6 +6,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\PengaduanController;
 use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\ProfileController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -24,6 +26,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // Profile Routes
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
+
     // Pengaduan Routes
     Route::get('/pengaduan', [PengaduanController::class, 'index'])->name('pengaduan.index');
     Route::get('/pengaduan/create', [PengaduanController::class, 'create'])->name('pengaduan.create');
@@ -39,5 +45,11 @@ Route::middleware('auth')->group(function () {
         Route::patch('/pengaduan/{pengaduan}/status', [PengaduanController::class, 'updateStatus'])->name('pengaduan.updateStatus');
         Route::post('/pengaduan/{pengaduan}/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
         Route::delete('/feedback/{feedback}', [FeedbackController::class, 'destroy'])->name('feedback.destroy');
+
+        // User Management
+        Route::post('/user', [UserController::class, 'store'])->name('user.store');
+        Route::post('/user/import', [UserController::class, 'import'])->name('user.import');
+        Route::put('/user/{user}', [UserController::class, 'update'])->name('user.update');
+        Route::delete('/user/{user}', [UserController::class, 'destroy'])->name('user.destroy');
     });
 });

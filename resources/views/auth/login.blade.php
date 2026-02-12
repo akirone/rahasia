@@ -76,7 +76,7 @@
                         <div class="text-center mb-4">
                             <i class="bi bi-megaphone text-gradient" style="font-size: 4rem;"></i>
                             <h3 class="fw-bold mt-3 text-gradient">Login</h3>
-                            <p class="text-muted">Aplikasi Pengaduan SMKN 1 Pacitan</p>
+                            <p class="text-muted">Aplikasi Pengaduan Sekolah</p>
                         </div>
 
                         @if ($errors->any())
@@ -135,10 +135,10 @@
                             </button>
                         </form>
 
-                        <div class="text-center mt-3">
+                        {{-- <div class="text-center mt-3">
                             <p class="text-muted mb-0">Belum punya akun? <a href="{{ route('register') }}"
                                     class="link-gradient text-decoration-none">Daftar sekarang</a></p>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
             </div>

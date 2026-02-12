@@ -9,7 +9,7 @@
         }
 
         .navbar-gradient {
-            background: linear-gradient(135deg, #38b2ac 0%, #319795 100%);
+            background: linear-gradient(135deg, #047857 0%, #059669 50%, #10b981 100%);
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
@@ -102,10 +102,10 @@
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #38b2ac 0%, #319795 100%);
+            background: linear-gradient(135deg, #047857 0%, #059669 50%, #10b981 100%);
             color: white;
             border: none;
-            box-shadow: 0 4px 12px rgba(56, 178, 172, 0.4);
+            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.4);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -117,7 +117,7 @@
 
         .btn-create-float:hover {
             transform: scale(1.1);
-            box-shadow: 0 6px 16px rgba(56, 178, 172, 0.6);
+            box-shadow: 0 6px 16px rgba(4, 120, 87, 0.6);
         }
     </style>
 @endpush
@@ -147,6 +147,14 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li>
+                                <a class="dropdown-item" href="{{ route('profile.edit') }}">
+                                    <i class="bi bi-person-gear"></i> Edit Profile
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
                                 <a class="dropdown-item text-danger" href="{{ route('logout') }}"
                                     onclick="event.preventDefault(); document.getElementById('logout-form-nav').submit();">
                                     <i class="bi bi-box-arrow-right"></i> Logout
@@ -170,10 +178,9 @@
                 <h2 class="fw-bold mb-1">Dashboard Siswa</h2>
                 <p class="text-muted mb-0">Pantau status dan progres pengaduan Anda</p>
             </div>
-            <button type="button" class="btn btn-primary d-none d-md-flex align-items-center gap-2" data-bs-toggle="modal"
-                data-bs-target="#createPengaduanModal">
+            <a href="{{ route('pengaduan.create') }}" class="btn btn-primary d-none d-md-flex align-items-center gap-2">
                 <i class="bi bi-plus-circle"></i> Buat Pengaduan Baru
-            </button>
+            </a>
         </div>
 
         @if (session('success'))
@@ -338,11 +345,10 @@
                                                             <i class="bi bi-eye"></i>
                                                         </a>
                                                         @if ($pengaduan->status === 'Menunggu')
-                                                            <button type="button" class="btn btn-sm btn-outline-warning"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#editPengaduanModal{{ $pengaduan->id }}">
+                                                            <a href="{{ route('pengaduan.edit', $pengaduan) }}"
+                                                                class="btn btn-sm btn-outline-warning">
                                                                 <i class="bi bi-pencil"></i>
-                                                            </button>
+                                                            </a>
                                                             <form action="{{ route('pengaduan.destroy', $pengaduan) }}"
                                                                 method="POST" style="display: inline-block;"
                                                                 onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengaduan ini?');">
@@ -357,88 +363,6 @@
                                                     </div>
                                                 </td>
                                             </tr>
-
-                                            <!-- Edit Modal for each pengaduan -->
-                                            @if ($pengaduan->status === 'Menunggu')
-                                                <div class="modal fade" id="editPengaduanModal{{ $pengaduan->id }}"
-                                                    tabindex="-1">
-                                                    <div class="modal-dialog modal-lg">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header">
-                                                                <h5 class="modal-title">Edit Pengaduan</h5>
-                                                                <button type="button" class="btn-close"
-                                                                    data-bs-dismiss="modal"></button>
-                                                            </div>
-                                                            <form action="{{ route('pengaduan.update', $pengaduan) }}"
-                                                                method="POST" enctype="multipart/form-data">
-                                                                @csrf
-                                                                @method('PUT')
-                                                                <div class="modal-body">
-                                                                    <div class="mb-3">
-                                                                        <label for="kategori_id_{{ $pengaduan->id }}"
-                                                                            class="form-label">Kategori Pengaduan <span
-                                                                                class="text-danger">*</span></label>
-                                                                        <select class="form-select"
-                                                                            id="kategori_id_{{ $pengaduan->id }}"
-                                                                            name="kategori_id" required>
-                                                                            <option value="">Pilih Kategori</option>
-                                                                            @foreach ($kategoris as $kategori)
-                                                                                <option value="{{ $kategori->id }}"
-                                                                                    {{ $pengaduan->kategori_id == $kategori->id ? 'selected' : '' }}>
-                                                                                    {{ $kategori->nama }}
-                                                                                </option>
-                                                                            @endforeach
-                                                                        </select>
-                                                                    </div>
-
-                                                                    <div class="mb-3">
-                                                                        <label for="lokasi_{{ $pengaduan->id }}"
-                                                                            class="form-label">Lokasi Kejadian <span
-                                                                                class="text-danger">*</span></label>
-                                                                        <input type="text" class="form-control"
-                                                                            id="lokasi_{{ $pengaduan->id }}"
-                                                                            name="lokasi"
-                                                                            placeholder="Contoh: Ruang Kelas XII RPL"
-                                                                            required value="{{ $pengaduan->lokasi }}">
-                                                                    </div>
-
-                                                                    <div class="mb-3">
-                                                                        <label for="keterangan_{{ $pengaduan->id }}"
-                                                                            class="form-label">Keterangan Lengkap <span
-                                                                                class="text-danger">*</span></label>
-                                                                        <textarea class="form-control" id="keterangan_{{ $pengaduan->id }}" name="keterangan" rows="5"
-                                                                            placeholder="Jelaskan detail pengaduan Anda..." required>{{ $pengaduan->keterangan }}</textarea>
-                                                                    </div>
-
-                                                                    <div class="mb-3">
-                                                                        <label for="foto_{{ $pengaduan->id }}"
-                                                                            class="form-label">Foto Pendukung
-                                                                            (Opsional)
-                                                                        </label>
-                                                                        @if ($pengaduan->foto)
-                                                                            <div class="mb-2">
-                                                                                <small class="text-muted">Foto saat ini:
-                                                                                    {{ basename($pengaduan->foto) }}</small>
-                                                                            </div>
-                                                                        @endif
-                                                                        <input type="file" class="form-control"
-                                                                            id="foto_{{ $pengaduan->id }}" name="foto"
-                                                                            accept="image/*">
-                                                                        <small class="text-muted">Format: JPG, JPEG, PNG.
-                                                                            Maksimal 2MB</small>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="modal-footer">
-                                                                    <button type="button" class="btn btn-secondary"
-                                                                        data-bs-dismiss="modal">Batal</button>
-                                                                    <button type="submit" class="btn btn-primary">Simpan
-                                                                        Perubahan</button>
-                                                                </div>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            @endif
                                         @endforeach
                                     </tbody>
                                 </table>
@@ -447,10 +371,9 @@
                             <div class="text-center py-5">
                                 <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
                                 <p class="text-muted mt-3 mb-3">Anda belum memiliki pengaduan</p>
-                                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#createPengaduanModal">
+                                <a href="{{ route('pengaduan.create') }}" class="btn btn-primary">
                                     <i class="bi bi-plus-circle"></i> Buat Pengaduan Pertama
-                                </button>
+                                </a>
                             </div>
                         @endif
                     </div>
@@ -459,70 +382,8 @@
         </div>
     </div>
 
-    <!-- Create Pengaduan Modal -->
-    <div class="modal fade" id="createPengaduanModal" tabindex="-1" aria-labelledby="createPengaduanModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header" style="background: linear-gradient(135deg, #38b2ac 0%, #319795 100%);">
-                    <h5 class="modal-title text-white" id="createPengaduanModalLabel">
-                        <i class="bi bi-file-earmark-plus-fill"></i> Buat Pengaduan Baru
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-                </div>
-                <form action="{{ route('pengaduan.store') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="kategori_id" class="form-label">Kategori Pengaduan <span
-                                    class="text-danger">*</span></label>
-                            <select class="form-select" id="kategori_id" name="kategori_id" required>
-                                <option value="">Pilih Kategori</option>
-                                @foreach ($kategoris as $kategori)
-                                    <option value="{{ $kategori->id }}">{{ $kategori->nama }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="lokasi" class="form-label">Lokasi Kejadian <span
-                                    class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="lokasi" name="lokasi"
-                                placeholder="Contoh: Ruang Kelas XII RPL" required>
-                            <small class="text-muted">Sebutkan lokasi spesifik kejadian</small>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="keterangan" class="form-label">Keterangan Lengkap <span
-                                    class="text-danger">*</span></label>
-                            <textarea class="form-control" id="keterangan" name="keterangan" rows="5"
-                                placeholder="Jelaskan detail pengaduan Anda..." required></textarea>
-                            <small class="text-muted">Berikan penjelasan sedetail mungkin</small>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="foto" class="form-label">Foto Pendukung (Opsional)</label>
-                            <input type="file" class="form-control" id="foto" name="foto" accept="image/*">
-                            <small class="text-muted">Format: JPG, JPEG, PNG. Maksimal 4MB</small>
-                        </div>
-
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle-fill me-2"></i>
-                            <strong>Catatan:</strong> Pengaduan Anda akan direview oleh admin. Status awal adalah
-                            "Menunggu".
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            <i class="bi bi-x-circle"></i> Batal
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-send-fill"></i> Kirim Pengaduan
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+    <!-- Floating Action Button -->
+    <a href="{{ route('pengaduan.create') }}" class="btn-create-float d-md-none" title="Buat Pengaduan Baru">
+        <i class="bi bi-plus-lg"></i>
+    </a>
 @endsection

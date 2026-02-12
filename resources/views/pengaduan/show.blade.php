@@ -174,6 +174,18 @@
                             </div>
                         @endif
 
+                        @if ($pengaduan->foto_dokumentasi)
+                            <div class="mb-3">
+                                <label class="text-muted small">Foto Dokumentasi Admin</label>
+                                <div class="mt-2">
+                                    <img src="{{ asset('storage/' . $pengaduan->foto_dokumentasi) }}"
+                                        class="img-fluid rounded shadow-sm" alt="Foto Dokumentasi"
+                                        style="max-height: 400px; cursor: pointer;" data-bs-toggle="modal"
+                                        data-bs-target="#dokumentasiModal">
+                                </div>
+                            </div>
+                        @endif
+
                         <hr>
 
                         <div class="d-flex gap-2">
@@ -234,11 +246,14 @@
                                 </div>
                             @endif
 
-                            <form action="{{ route('pengaduan.updateStatus', $pengaduan) }}" method="POST">
+                            <form action="{{ route('pengaduan.updateStatus', $pengaduan) }}" method="POST"
+                                enctype="multipart/form-data">
                                 @csrf
                                 @method('PATCH')
                                 <div class="mb-3">
-                                    <select name="status" class="form-select @error('status') is-invalid @enderror" required>
+                                    <label for="status" class="form-label">Status Pengaduan</label>
+                                    <select name="status" id="status"
+                                        class="form-select @error('status') is-invalid @enderror" required>
                                         <option value="Menunggu" {{ $pengaduan->status == 'Menunggu' ? 'selected' : '' }}>
                                             Menunggu</option>
                                         <option value="Proses" {{ $pengaduan->status == 'Proses' ? 'selected' : '' }}>
@@ -250,6 +265,21 @@
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
+
+                                <div class="mb-3">
+                                    <label for="foto_dokumentasi" class="form-label">
+                                        Foto Dokumentasi (Opsional)
+                                    </label>
+                                    <input type="file"
+                                        class="form-control @error('foto_dokumentasi') is-invalid @enderror"
+                                        id="foto_dokumentasi" name="foto_dokumentasi" accept="image/*">
+                                    <small class="text-muted">Upload foto dokumentasi saat mengubah status (Max:
+                                        4MB)</small>
+                                    @error('foto_dokumentasi')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
                                 <button type="submit" class="btn btn-primary w-100">
                                     <i class="bi bi-check-circle"></i> Update Status
                                 </button>
@@ -312,7 +342,8 @@
                             <form action="{{ route('feedback.store', $pengaduan) }}" method="POST">
                                 @csrf
                                 <div class="mb-2">
-                                    <textarea name="isi" class="form-control @error('isi') is-invalid @enderror" rows="3" placeholder="Tulis feedback atau tanggapan..." required>{{ old('isi') }}</textarea>
+                                    <textarea name="isi" class="form-control @error('isi') is-invalid @enderror" rows="3"
+                                        placeholder="Tulis feedback atau tanggapan..." required>{{ old('isi') }}</textarea>
                                     @error('isi')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -394,6 +425,24 @@
                     </div>
                     <div class="modal-body text-center">
                         <img src="{{ asset('storage/' . $pengaduan->foto) }}" class="img-fluid" alt="Foto Pengaduan">
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Dokumentasi Modal -->
+    @if ($pengaduan->foto_dokumentasi)
+        <div class="modal fade" id="dokumentasiModal" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Foto Dokumentasi Admin</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <img src="{{ asset('storage/' . $pengaduan->foto_dokumentasi) }}" class="img-fluid"
+                            alt="Foto Dokumentasi">
                     </div>
                 </div>
             </div>

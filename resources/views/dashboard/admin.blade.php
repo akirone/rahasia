@@ -489,6 +489,14 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li>
+                                <a class="dropdown-item" href="{{ route('profile.edit') }}">
+                                    <i class="bi bi-person-gear"></i> Edit Profile
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
                                 <a class="dropdown-item text-danger" href="{{ route('logout') }}"
                                     onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                                     <i class="bi bi-box-arrow-right"></i> Logout
@@ -574,8 +582,20 @@
 
                 <!-- Daftar Akun Table -->
                 <div class="table-card mb-4">
-                    <div class="table-card-header">
-                        <h2 class="table-card-title">Daftar Akun Terdaftar</h2>
+                    <div class="table-card-header d-flex justify-content-between align-items-center">
+                        <h2 class="table-card-title">List Akun Terdaftar</h2>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-success" data-bs-toggle="modal"
+                                data-bs-target="#importUserModal"
+                                style="border-radius: 8px; padding: 0.625rem 1.25rem; font-weight: 600;">
+                                <i class="bi bi-file-earmark-arrow-up me-2"></i>Import Excel
+                            </button>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                data-bs-target="#tambahUserModal"
+                                style="border-radius: 8px; padding: 0.625rem 1.25rem; font-weight: 600;">
+                                <i class="bi bi-plus-circle me-2"></i>Tambah User
+                            </button>
+                        </div>
                     </div>
                     <div class="table-responsive">
                         <table class="modern-table table-compact table mb-0">
@@ -588,13 +608,15 @@
                                     <th style="width: 120px;">ROLE</th>
                                     <th style="width: 140px;">PENGADUAN</th>
                                     <th style="width: 110px;">TERDAFTAR</th>
+                                    <th style="width: 120px;">AKSI</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($users as $index => $userItem)
                                     <tr>
                                         <td>
-                                            <span style="font-weight: 600; color: #64748b;">{{ $index + 1 }}</span>
+                                            <span
+                                                style="font-weight: 600; color: #64748b;">{{ $users->firstItem() + $index }}</span>
                                         </td>
                                         <td>
                                             <div class="d-flex align-items-center gap-2">
@@ -648,10 +670,34 @@
                                                 {{ $userItem->created_at->format('d/m/Y') }}
                                             </span>
                                         </td>
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                                @if (!$userItem->isAdmin())
+                                                    <button type="button" class="btn btn-sm btn-warning"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#editUserModal{{ $userItem->id }}"
+                                                        style="border-radius: 6px; padding: 0.375rem 0.75rem; font-weight: 600;">
+                                                        <i class="bi bi-pencil-square"></i>
+                                                    </button>
+                                                    <form action="{{ route('user.destroy', $userItem->id) }}"
+                                                        method="POST" class="d-inline"
+                                                        onsubmit="return confirm('Apakah Anda yakin ingin menghapus user ini?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-sm btn-danger"
+                                                            style="border-radius: 6px; padding: 0.375rem 0.75rem; font-weight: 600;">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                @else
+                                                    <span class="text-muted" style="font-size: 0.875rem;">-</span>
+                                                @endif
+                                            </div>
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="text-center py-5">
+                                        <td colspan="8" class="text-center py-5">
                                             <i class="bi bi-people" style="font-size: 3rem; color: #cbd5e0;"></i>
                                             <p class="text-muted mt-3 mb-0">Belum ada akun terdaftar</p>
                                         </td>
@@ -660,6 +706,20 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Pagination -->
+                    @if ($users->hasPages())
+                        <div class="d-flex justify-content-between align-items-center px-4 py-3"
+                            style="border-top: 1px solid #e2e8f0;">
+                            <div class="text-muted" style="font-size: 0.875rem;">
+                                Menampilkan {{ $users->firstItem() }} - {{ $users->lastItem() }} dari
+                                {{ $users->total() }} data
+                            </div>
+                            <div>
+                                {{ $users->links('pagination::bootstrap-5') }}
+                            </div>
+                        </div>
+                    @endif
                 </div>
 
                 <!-- Active Projects Table -->
@@ -758,4 +818,231 @@
             </div>
         </main>
     </div>
+
+    <!-- Modal Tambah User -->
+    <div class="modal fade" id="tambahUserModal" tabindex="-1" aria-labelledby="tambahUserModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 16px; border: none;">
+                <div class="modal-header" style="border-bottom: 1px solid #e2e8f0; padding: 1.5rem;">
+                    <h5 class="modal-title" id="tambahUserModalLabel" style="font-weight: 700; color: #1a202c;">
+                        <i class="bi bi-person-plus-fill me-2" style="color: #3b82f6;"></i>Tambah User Baru
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ route('user.store') }}" method="POST">
+                    @csrf
+                    <div class="modal-body" style="padding: 1.5rem;">
+                        <div class="mb-3">
+                            <label for="name" class="form-label"
+                                style="font-weight: 600; color: #2d3748; font-size: 0.875rem;">Nama Lengkap</label>
+                            <input type="text" class="form-control @error('name') is-invalid @enderror" id="name"
+                                name="name" value="{{ old('name') }}" required
+                                style="border-radius: 8px; padding: 0.75rem; border: 1px solid #e2e8f0;"
+                                placeholder="Masukkan nama lengkap">
+                            @error('name')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="mb-3">
+                            <label for="nis" class="form-label"
+                                style="font-weight: 600; color: #2d3748; font-size: 0.875rem;">NISN</label>
+                            <input type="text" class="form-control @error('nis') is-invalid @enderror" id="nis"
+                                name="nis" value="{{ old('nis') }}" required
+                                style="border-radius: 8px; padding: 0.75rem; border: 1px solid #e2e8f0;"
+                                placeholder="Masukkan NISN">
+                            @error('nis')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label"
+                                style="font-weight: 600; color: #2d3748; font-size: 0.875rem;">Email</label>
+                            <input type="email" class="form-control @error('email') is-invalid @enderror"
+                                id="email" name="email" value="{{ old('email') }}" required
+                                style="border-radius: 8px; padding: 0.75rem; border: 1px solid #e2e8f0;"
+                                placeholder="contoh@email.com">
+                            @error('email')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label"
+                                style="font-weight: 600; color: #2d3748; font-size: 0.875rem;">Password</label>
+                            <input type="password" class="form-control @error('password') is-invalid @enderror"
+                                id="password" name="password" required
+                                style="border-radius: 8px; padding: 0.75rem; border: 1px solid #e2e8f0;"
+                                placeholder="Minimal 8 karakter">
+                            @error('password')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="mb-3">
+                            <label for="password_confirmation" class="form-label"
+                                style="font-weight: 600; color: #2d3748; font-size: 0.875rem;">Konfirmasi Password</label>
+                            <input type="password" class="form-control" id="password_confirmation"
+                                name="password_confirmation" required
+                                style="border-radius: 8px; padding: 0.75rem; border: 1px solid #e2e8f0;"
+                                placeholder="Ulangi password">
+                        </div>
+                        <input type="hidden" name="role" value="user">
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid #e2e8f0; padding: 1rem 1.5rem;">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                            style="border-radius: 8px; padding: 0.625rem 1.25rem; font-weight: 600;">
+                            Batal
+                        </button>
+                        <button type="submit" class="btn btn-primary"
+                            style="border-radius: 8px; padding: 0.625rem 1.25rem; font-weight: 600;">
+                            <i class="bi bi-check-circle me-2"></i>Simpan User
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Import User -->
+    <div class="modal fade" id="importUserModal" tabindex="-1" aria-labelledby="importUserModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 16px; border: none; overflow: hidden;">
+                <form action="{{ route('user.import') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-header"
+                        style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 1.5rem; border: none;">
+                        <h5 class="modal-title" id="importUserModalLabel" style="color: white; font-weight: 700;">
+                            <i class="bi bi-file-earmark-arrow-up-fill me-2" style="color: white;"></i>Import Data Siswa
+                            dari Excel
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" style="padding: 1.5rem;">
+                        <div class="alert alert-info" style="border-radius: 8px;">
+                            <h6 class="mb-2"><i class="bi bi-info-circle me-2"></i>Format Excel:</h6>
+                            <ul class="mb-2 small">
+                                <li>Kolom: <strong>Name</strong>, <strong>Email</strong>, <strong>NIS</strong>,
+                                    <strong>Kelas</strong>, <strong>Password</strong>
+                                </li>
+                                <li>Row pertama adalah header</li>
+                                <li>Jika kolom Password kosong, default: <code>12345678</code></li>
+                            </ul>
+                            <a href="{{ asset('template/template_import_siswa.csv') }}" class="btn btn-sm btn-primary"
+                                download>
+                                <i class="bi bi-download me-1"></i>Download Template
+                            </a>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="file" class="form-label"
+                                style="font-weight: 600; color: #334155; font-size: 0.875rem;">
+                                File Excel <span style="color: #ef4444;">*</span>
+                            </label>
+                            <input type="file" class="form-control" id="file" name="file"
+                                accept=".xlsx,.xls,.csv" required
+                                style="border-radius: 8px; border: 2px solid #e2e8f0; padding: 0.75rem;">
+                            <small class="text-muted">Format: .xlsx, .xls, .csv (Max: 2MB)</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid #e2e8f0; padding: 1rem 1.5rem;">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                            style="border-radius: 8px; padding: 0.625rem 1.25rem; font-weight: 600;">
+                            Batal
+                        </button>
+                        <button type="submit" class="btn btn-success"
+                            style="border-radius: 8px; padding: 0.625rem 1.25rem; font-weight: 600;">
+                            <i class="bi bi-upload me-2"></i>Import Sekarang
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit User (loop for each user) -->
+    @foreach ($users as $userItem)
+        @if (!$userItem->isAdmin())
+            <div class="modal fade" id="editUserModal{{ $userItem->id }}" tabindex="-1"
+                aria-labelledby="editUserModalLabel{{ $userItem->id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content" style="border-radius: 16px; border: none;">
+                        <div class="modal-header" style="border-bottom: 1px solid #e2e8f0; padding: 1.5rem;">
+                            <h5 class="modal-title" id="editUserModalLabel{{ $userItem->id }}"
+                                style="font-weight: 700; color: #1a202c;">
+                                <i class="bi bi-pencil-square me-2" style="color: #f59e0b;"></i>Edit User
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <form action="{{ route('user.update', $userItem->id) }}" method="POST">
+                            @csrf
+                            @method('PUT')
+                            <div class="modal-body" style="padding: 1.5rem;">
+                                <div class="mb-3">
+                                    <label for="edit_name{{ $userItem->id }}" class="form-label"
+                                        style="font-weight: 600; color: #2d3748; font-size: 0.875rem;">Nama Lengkap</label>
+                                    <input type="text" class="form-control" id="edit_name{{ $userItem->id }}"
+                                        name="name" value="{{ $userItem->name }}" required
+                                        style="border-radius: 8px; padding: 0.75rem; border: 1px solid #e2e8f0;">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_nis{{ $userItem->id }}" class="form-label"
+                                        style="font-weight: 600; color: #2d3748; font-size: 0.875rem;">NISN</label>
+                                    <input type="text" class="form-control" id="edit_nis{{ $userItem->id }}"
+                                        name="nis" value="{{ $userItem->nis }}" required
+                                        style="border-radius: 8px; padding: 0.75rem; border: 1px solid #e2e8f0;">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_email{{ $userItem->id }}" class="form-label"
+                                        style="font-weight: 600; color: #2d3748; font-size: 0.875rem;">Email</label>
+                                    <input type="email" class="form-control" id="edit_email{{ $userItem->id }}"
+                                        name="email" value="{{ $userItem->email }}" required
+                                        style="border-radius: 8px; padding: 0.75rem; border: 1px solid #e2e8f0;">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_password{{ $userItem->id }}" class="form-label"
+                                        style="font-weight: 600; color: #2d3748; font-size: 0.875rem;">Password Baru
+                                        <small class="text-muted">(Kosongkan jika tidak ingin mengubah)</small></label>
+                                    <input type="password" class="form-control" id="edit_password{{ $userItem->id }}"
+                                        name="password"
+                                        style="border-radius: 8px; padding: 0.75rem; border: 1px solid #e2e8f0;"
+                                        placeholder="Minimal 8 karakter">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_password_confirmation{{ $userItem->id }}" class="form-label"
+                                        style="font-weight: 600; color: #2d3748; font-size: 0.875rem;">Konfirmasi
+                                        Password</label>
+                                    <input type="password" class="form-control"
+                                        id="edit_password_confirmation{{ $userItem->id }}" name="password_confirmation"
+                                        style="border-radius: 8px; padding: 0.75rem; border: 1px solid #e2e8f0;"
+                                        placeholder="Ulangi password baru">
+                                </div>
+                            </div>
+                            <div class="modal-footer" style="border-top: 1px solid #e2e8f0; padding: 1rem 1.5rem;">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                                    style="border-radius: 8px; padding: 0.625rem 1.25rem; font-weight: 600;">
+                                    Batal
+                                </button>
+                                <button type="submit" class="btn btn-warning"
+                                    style="border-radius: 8px; padding: 0.625rem 1.25rem; font-weight: 600; color: white;">
+                                    <i class="bi bi-check-circle me-2"></i>Update User
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
 @endsection
+
+@push('scripts')
+    <script>
+        // Auto open modal if there are validation errors
+        @if ($errors->any())
+            var tambahUserModal = new bootstrap.Modal(document.getElementById('tambahUserModal'));
+            tambahUserModal.show();
+        @endif
+    </script>
+@endpush
